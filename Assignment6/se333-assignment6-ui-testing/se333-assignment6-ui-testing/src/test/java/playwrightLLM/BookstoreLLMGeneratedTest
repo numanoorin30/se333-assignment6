@@ -1,0 +1,72 @@
+package playwrightLLM;
+
+import com.microsoft.playwright.*;
+import org.junit.jupiter.api.*;
+
+import java.nio.file.Paths;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Represents tests generated/assisted by an AI agent using Playwright MCP.
+ */
+public class BookstoreLLMGeneratedTest {
+
+    static Playwright playwright;
+    static Browser browser;
+    static BrowserContext context;
+    static Page page;
+
+    @BeforeAll
+    static void beforeAll() {
+        playwright = Playwright.create();
+        browser = playwright.chromium().launch(
+                new BrowserType.LaunchOptions().setHeadless(true));
+        context = browser.newContext(
+                new Browser.NewContextOptions()
+                        .setRecordVideoDir(Paths.get("videos/llm"))
+                        .setRecordVideoSize(1280, 720));
+        page = context.newPage();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        context.close();
+        browser.close();
+        playwright.close();
+    }
+
+    @Test
+    @DisplayName("specification-based: LLM-style high level checkout path")
+    void llmStyleScenario() {
+        page.navigate("https://depaul.bncollege.com/");
+        page.waitForLoadState();
+
+        page.locator("input[placeholder*='Search'], input[id*='search']").first().fill("earbuds");
+        page.keyboard().press("Enter");
+        page.waitForLoadState();
+
+        page.getByText("Brand", new Page.GetByTextOptions().setExact(false)).click();
+        page.getByText("JBL", new Page.GetByTextOptions().setExact(false)).click();
+
+        page.getByText("Color", new Page.GetByTextOptions().setExact(false)).click();
+        page.getByText("Black", new Page.GetByTextOptions().setExact(false)).click();
+
+        page.getByText("Price", new Page.GetByTextOptions().setExact(false)).click();
+        page.getByText("Over $50", new Page.GetByTextOptions().setExact(false)).click();
+
+        page.waitForLoadState();
+        page.getByText("JBL", new Page.GetByTextOptions().setExact(false)).first().click();
+        page.waitForLoadState();
+
+        assertTrue(page.getByText("JBL", new Page.GetByTextOptions().setExact(false))
+                .first().isVisible(), "Should land on a JBL product page");
+
+        page.getByText("Add to Cart", new Page.GetByTextOptions().setExact(false))
+                .first().click();
+        page.waitForTimeout(3000);
+
+        assertTrue(page.getByText("Item", new Page.GetByTextOptions().setExact(false))
+                .first().isVisible(), "Cart indicator shows at least 1 item");
+    }
+}
